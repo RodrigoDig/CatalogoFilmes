@@ -1,6 +1,8 @@
-import { alterarImagem, cadastrarFilme } from '../repository/filmeRepository.js';
-import { Router } from 'express';
+import { alterarImagem, cadastrarFilme, consulta } from '../repository/filmeRepository.js';
+
 import multer from 'multer'
+
+import { Router } from 'express';
 
 const server = Router();
 const upload = multer({ dest: 'storage/capasFilmes' })
@@ -38,24 +40,36 @@ server.post('/filme', async (req, resp) => {
 
 })
 
-server.put('/filme/:id/capa', upload.single('capa') , async (req, resp) => {
+server.put('/filme/:id/imagem', upload.single('capa') , async (req, resp) => {
     try{
         const { id } = req.params;
         const  imagem = req.file.path;
 
-        const x = await alterarImagem(id, imagem);  
-        
+        const resposta = await alterarImagem(imagem, id); 
+        if( resposta != 1 )
+            throw new Error('A imagem não pode ser salva');
+             
         resp.status(204).send();
 
     }catch (err) {
         resp.status(404).send({
-            error: err.message
+            erro: err.message
         })
     }
 })
 
 
-
+server.get('/filme', async(req, resp) =>{
+    try{
+        const resposta = await consulta();
+        resp.send(resposta);
+        
+    } catch (err) {
+        resp.status(400).send({
+            erro: err.message
+        })
+    }
+})
 
 
 
